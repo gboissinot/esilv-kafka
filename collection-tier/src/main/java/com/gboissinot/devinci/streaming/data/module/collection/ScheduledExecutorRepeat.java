@@ -9,6 +9,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @author Gregory Boissinot
+ */
 class ScheduledExecutorRepeat {
 
     private static final Logger logger = LoggerFactory.getLogger(ScheduledExecutorRepeat.class);
@@ -48,7 +51,7 @@ class ScheduledExecutorRepeat {
                 counter.incrementAndGet();
                 collector.collect();
             } catch (Throwable e) {
-                System.out.println(e);
+                throw new RuntimeException(e);
             }
         }
     }

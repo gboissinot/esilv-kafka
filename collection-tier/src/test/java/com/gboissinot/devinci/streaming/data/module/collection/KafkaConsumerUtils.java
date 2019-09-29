@@ -8,6 +8,9 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @author Gregory Boissinot
+ */
 public class KafkaConsumerUtils {
 
     public static void main(String[] args) {
@@ -17,8 +20,8 @@ public class KafkaConsumerUtils {
         final Properties properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "group-test-2");
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 
         // Create the consumer using properties.
@@ -31,7 +34,6 @@ public class KafkaConsumerUtils {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             consumer.close();
-            System.out.println("DONE");
             System.out.println("Nb elements: " + counter.get());
         }));
 

@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @author Gregory Boissinot
+ */
 class KafkaPublisher {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaPublisher.class);
@@ -25,7 +28,6 @@ class KafkaPublisher {
     }
 
     private Producer<String, String> createProducer(KafkaHandlerConfig config) {
-        Producer<String, String> producer;
         Properties properties = new Properties();
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.getBootstrapServers().get(0));
         properties.put(ProducerConfig.ACKS_CONFIG, "all");
@@ -37,7 +39,7 @@ class KafkaPublisher {
     }
 
     void publish(String content) {
-        logger.info(content);
+        logger.info(String.format("Publishing %s", content));
         ProducerRecord<String, String> record = new ProducerRecord<>(topicName, content);
         producer.send(record, (recordMetadata, e) -> {
             if (e != null) {

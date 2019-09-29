@@ -21,12 +21,11 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.stream.IntStream;
 
+/**
+ * @author Gregory Boissinot
+ */
 class Collector {
 
     private static final Logger logger = LoggerFactory.getLogger(Collector.class);
@@ -37,7 +36,7 @@ class Collector {
         this.publisher = publisher;
     }
 
-    void collect() throws KeyStoreException, NoSuchAlgorithmException, IOException, KeyManagementException {
+    void collect() throws Throwable {
 
         String urlOverHttps = "https://opendata.paris.fr//api/records/1.0/search/?dataset=velib-disponibilite-en-temps-reel&rows=1400&facet=overflowactivation&facet=creditcard&facet=kioskstate&facet=station_state";
 
