@@ -11,15 +11,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author Gregory Boissinot
  */
-public class KafkaConsumerUtils {
+public class KafkaCollectionConsumerUtils {
 
     public static void main(String[] args) {
 
-        final String topic = "velib_stats";
+        final String topic ="velib_stats-1";
 
         final Properties properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "group-test-2");
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "group-test-101");
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());

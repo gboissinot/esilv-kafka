@@ -28,6 +28,8 @@ import java.util.stream.IntStream;
  */
 class Collector {
 
+    private static final String OPEN_DATA_URL = "https://opendata.paris.fr//api/records/1.0/search/?dataset=velib-disponibilite-en-temps-reel&rows=1400&facet=overflowactivation&facet=creditcard&facet=kioskstate&facet=station_state";
+
     private static final Logger logger = LoggerFactory.getLogger(Collector.class);
 
     private final KafkaPublisher publisher;
@@ -36,42 +38,46 @@ class Collector {
         this.publisher = publisher;
     }
 
-    void collect() throws Throwable {
+    void collect() {
+        try {
 
-        String urlOverHttps = "https://opendata.paris.fr//api/records/1.0/search/?dataset=velib-disponibilite-en-temps-reel&rows=1400&facet=overflowactivation&facet=creditcard&facet=kioskstate&facet=station_state";
+            TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
+            SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();
+            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,
+                    NoopHostnameVerifier.INSTANCE);
 
-        TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
-        SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();
-        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,
-                NoopHostnameVerifier.INSTANCE);
+            Registry<ConnectionSocketFactory> socketFactoryRegistry =
+                    RegistryBuilder.<ConnectionSocketFactory>create()
+                            .register("https", sslsf)
+                            .register("http", new PlainConnectionSocketFactory())
+                            .build();
 
-        Registry<ConnectionSocketFactory> socketFactoryRegistry =
-                RegistryBuilder.<ConnectionSocketFactory>create()
-                        .register("https", sslsf)
-                        .register("http", new PlainConnectionSocketFactory())
-                        .build();
+            BasicHttpClientConnectionManager connectionManager =
+                    new BasicHttpClientConnectionManager(socketFactoryRegistry);
+            CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf)
+                    .setConnectionManager(connectionManager).build();
 
-        BasicHttpClientConnectionManager connectionManager =
-                new BasicHttpClientConnectionManager(socketFactoryRegistry);
-        CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf)
-                .setConnectionManager(connectionManager).build();
+            HttpComponentsClientHttpRequestFactory requestFactory =
+                    new HttpComponentsClientHttpRequestFactory(httpClient);
 
-        HttpComponentsClientHttpRequestFactory requestFactory =
-                new HttpComponentsClientHttpRequestFactory(httpClient);
+            ResponseEntity<String> response =
+                    new RestTemplate(requestFactory).exchange(OPEN_DATA_URL, HttpMethod.GET, null, String.class);
 
-        ResponseEntity<String> response =
-                new RestTemplate(requestFactory).exchange(urlOverHttps, HttpMethod.GET, null, String.class);
+            String jsonString = response.getBody();
 
-        String jsonString = response.getBody();
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonNode = mapper.readTree(jsonString);
+            JsonNode records = jsonNode.get("records");
 
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode = mapper.readTree(jsonString);
-        JsonNode records = jsonNode.get("records");
+            IntStream.range(0, 1400).forEach(value -> {
+                JsonNode currentRecordNode = records.get(value);
+                if (currentRecordNode != null) {
+                    publisher.publish(currentRecordNode.toString());
+                }
+            });
 
-        IntStream.range(0, 1400).forEach(value -> {
-            JsonNode currentRecordNode = records.get(value);
-            publisher.publish(currentRecordNode.toString());
-        });
-
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
     }
 }

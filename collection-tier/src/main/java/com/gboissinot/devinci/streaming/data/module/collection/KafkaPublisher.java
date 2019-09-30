@@ -8,8 +8,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Gregory Boissinot
@@ -45,7 +45,7 @@ class KafkaPublisher {
             if (e != null) {
                 logger.error(e.getMessage(), e);
             } else {
-                logger.info("Record sent.");
+                logger.info("Batch record sent.");
             }
         });
     }
@@ -53,7 +53,7 @@ class KafkaPublisher {
     private void registerShutdownHook(final Producer<String, String> producer) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.debug("Closing Kafka publisher ...");
-            producer.close(2, TimeUnit.SECONDS);
+            producer.close(Duration.ofMillis(2000));
             logger.info("Kafka publisher closed.");
         }));
     }
