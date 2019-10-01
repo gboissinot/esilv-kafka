@@ -17,7 +17,7 @@ public class Starter {
     private static KafkaHandlerConfig buildConfig() {
         KafkaHandlerConfig config = new KafkaHandlerConfig();
         config.setBootstrapServers(Collections.singletonList("localhost:9092"));
-        config.setTopicName("velib_stats-1");
+        config.setTopicName("velib_stats");
         return config;
     }
 
