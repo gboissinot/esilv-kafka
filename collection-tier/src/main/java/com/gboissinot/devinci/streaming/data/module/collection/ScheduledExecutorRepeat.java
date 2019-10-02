@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Gregory Boissinot
@@ -14,7 +13,7 @@ class ScheduledExecutorRepeat {
     private static final Logger logger = LoggerFactory.getLogger(ScheduledExecutorRepeat.class);
 
     private final Collector collector;
-    private final CountDownLatch latch ;
+    private final CountDownLatch latch;
 
     ScheduledExecutorRepeat(Collector collector, int maxRepeat) {
         this.collector = collector;
@@ -25,7 +24,7 @@ class ScheduledExecutorRepeat {
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
         SchedulingTask scheduledTask = new SchedulingTask(latch);
         ScheduledFuture<?> scheduledFuture = executorService.scheduleWithFixedDelay(scheduledTask, 1, 30, TimeUnit.SECONDS);
-        latch.wait();
+        latch.await();
         scheduledFuture.cancel(true);
         executorService.shutdown();
     }

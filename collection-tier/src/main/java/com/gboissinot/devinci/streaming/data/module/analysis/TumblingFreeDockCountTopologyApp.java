@@ -1,0 +1,69 @@
+package com.gboissinot.devinci.streaming.data.module.analysis;
+
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
+import org.apache.kafka.streams.*;
+import org.apache.kafka.streams.kstream.*;
+import org.apache.kafka.streams.state.WindowStore;
+
+import java.time.Duration;
+import java.util.Properties;
+
+public class TumblingFreeDockCountTopologyApp {
+
+    public static void main(String[] args) {
+        Properties config = new Properties();
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "velibstats-application-window-1");
+        config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
+        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.Long().getClass());
+
+        TumblingFreeDockCountTopologyApp dockCountApp = new TumblingFreeDockCountTopologyApp();
+
+        KafkaStreams streams = new KafkaStreams(dockCountApp.createTopology(), config);
+        streams.cleanUp();
+        streams.start();
+
+        // shutdown hook to correctly close the streams application
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+
+        // Update:
+        // print the topology every 10 seconds for learning purposes
+        while (true) {
+            streams.localThreadsMetadata().forEach(data -> System.out.println(data));
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+    }
+
+    private Topology createTopology() {
+
+        StreamsBuilder builder = new StreamsBuilder();
+
+        KStream<String, Long> stream =
+                builder
+                        .stream("velib-nbfreedocks-updates", Consumed.with(Serdes.String(), Serdes.Long()))
+                        .map((key, value) -> new KeyValue<>("Count", value));
+
+        KGroupedStream<String, Long> groupedStream =
+                stream.groupByKey();
+
+        KTable<Windowed<String>, Long> timeWindowedAggregatedStream =
+                groupedStream
+                        .windowedBy(TimeWindows.of(Duration.ofMillis(10000)))
+                        .aggregate(
+                                () -> 0L,
+                                (aggKey, newValue, aggValue) -> aggValue + newValue,
+                                Materialized.<String, Long, WindowStore<Bytes, byte[]>>as("time-windowed-aggregated-stream-store")
+                                        .withValueSerde(Serdes.Long()));
+
+        timeWindowedAggregatedStream.toStream().to("velib-nbfreedocks-count-notifications", Produced.with(WindowedSerdes.timeWindowedSerdeFrom(String.class), Serdes.Long()));
+
+        return builder.build();
+    }
+}

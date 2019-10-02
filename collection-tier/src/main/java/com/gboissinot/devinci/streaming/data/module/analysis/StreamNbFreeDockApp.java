@@ -1,4 +1,4 @@
-package com.gboissinot.devinci.streaming.data.module.analysis.stream;
+package com.gboissinot.devinci.streaming.data.module.analysis;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,26 +12,24 @@ import org.apache.kafka.streams.kstream.Produced;
 import java.io.IOException;
 import java.util.Properties;
 
-public class FreeDockNbStreamApp {
+public class StreamNbFreeDockApp {
 
 
     public static void main(String[] args) {
         Properties config = new Properties();
-        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "velibstats-3-application");
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "velibstats-stream-application");
         config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 
-        FreeDockNbStreamApp dockCountApp = new FreeDockNbStreamApp();
+        StreamNbFreeDockApp dockCountApp = new StreamNbFreeDockApp();
 
         KafkaStreams streams = new KafkaStreams(dockCountApp.createTopology(), config);
         streams.start();
 
-        // shutdown hook to correctly close the streams application
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
 
-        // Update:
         // print the topology every 10 seconds for learning purposes
         while (true) {
             streams.localThreadsMetadata().forEach(data -> System.out.println(data));
@@ -41,8 +39,6 @@ public class FreeDockNbStreamApp {
                 break;
             }
         }
-
-
     }
 
     private Topology createTopology() {
@@ -52,13 +48,12 @@ public class FreeDockNbStreamApp {
 
         StreamsBuilder builder = new StreamsBuilder();
 
-        KStream<String, String> stats = builder.stream("velib_stats-1");
+        KStream<String, String> stats = builder.stream("velib-stats-raw");
         KStream<String, Long> docksCountStream = stats
-                // 4 - select key to apply a key (we discard the old key)
                 .selectKey((key, jsonRecordString) -> extract_station_name(jsonRecordString))
                 .map((key, value) -> new KeyValue<>(key, extract_nbfreeedock(value)));
 
-        docksCountStream.to("velib-freedocks-2", Produced.with(stringSerde, longSerde));
+        docksCountStream.to("velib-nbfreedocks-updates", Produced.with(stringSerde, longSerde));
 
         return builder.build();
     }
