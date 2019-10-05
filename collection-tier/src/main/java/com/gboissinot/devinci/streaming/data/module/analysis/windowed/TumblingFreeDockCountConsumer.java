@@ -1,8 +1,9 @@
-package com.gboissinot.devinci.streaming.data.module.analysis;
+package com.gboissinot.devinci.streaming.data.module.analysis.windowed;
 
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.streams.kstream.WindowedSerdes;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -12,20 +13,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author Gregory Boissinot
  */
-public class UpdatedDataConsumerUtils {
+public class TumblingFreeDockCountConsumer {
 
     public static void main(String[] args) {
 
-        final String topic = "velib-nbfreedocks-updates";
+        final String topic = "velib-nbfreedocks-count-notifications";
 
         final Properties properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "group-test-1");
-        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class.getName());
 
-        final Consumer<String, Long> consumer = new KafkaConsumer<>(properties);
+        final Consumer<WindowedSerdes.TimeWindowedSerde<String>, Long> consumer = new KafkaConsumer<>(properties);
         consumer.subscribe(Collections.singletonList(topic));
 
         final AtomicInteger counter = new AtomicInteger(0);
@@ -36,8 +37,8 @@ public class UpdatedDataConsumerUtils {
         }));
 
         while (true) {
-            final ConsumerRecords<String, Long> consumerRecords = consumer.poll(Duration.ofMillis(1000));
-            for (ConsumerRecord<String, Long> consumerRecord : consumerRecords) {
+            final ConsumerRecords<WindowedSerdes.TimeWindowedSerde<String>, Long> consumerRecords = consumer.poll(Duration.ofMillis(1000));
+            for (ConsumerRecord<WindowedSerdes.TimeWindowedSerde<String>, Long> consumerRecord : consumerRecords) {
                 counter.incrementAndGet();
                 System.out.println(consumerRecord);
             }

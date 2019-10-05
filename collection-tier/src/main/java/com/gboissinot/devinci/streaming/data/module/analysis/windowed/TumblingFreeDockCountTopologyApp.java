@@ -1,4 +1,4 @@
-package com.gboissinot.devinci.streaming.data.module.analysis;
+package com.gboissinot.devinci.streaming.data.module.analysis.windowed;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
@@ -26,11 +26,8 @@ public class TumblingFreeDockCountTopologyApp {
         streams.cleanUp();
         streams.start();
 
-        // shutdown hook to correctly close the streams application
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
 
-        // Update:
-        // print the topology every 10 seconds for learning purposes
         while (true) {
             streams.localThreadsMetadata().forEach(data -> System.out.println(data));
             try {

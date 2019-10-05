@@ -12,7 +12,7 @@ import org.apache.kafka.streams.kstream.Produced;
 import java.io.IOException;
 import java.util.Properties;
 
-public class StreamNbFreeDockApp {
+public class NbFreeDockStreamTopologyApp {
 
 
     public static void main(String[] args) {
@@ -23,14 +23,13 @@ public class StreamNbFreeDockApp {
         config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 
-        StreamNbFreeDockApp dockCountApp = new StreamNbFreeDockApp();
+        NbFreeDockStreamTopologyApp dockCountApp = new NbFreeDockStreamTopologyApp();
 
         KafkaStreams streams = new KafkaStreams(dockCountApp.createTopology(), config);
         streams.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
 
-        // print the topology every 10 seconds for learning purposes
         while (true) {
             streams.localThreadsMetadata().forEach(data -> System.out.println(data));
             try {
