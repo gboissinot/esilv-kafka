@@ -67,7 +67,7 @@ public class NbFreeDockStreamTopologyApp {
         }
         JsonNode fieldsMode = jsonNode.get("fields");
 
-        JsonNode stationNameNode = fieldsMode.get("station_name");
+        JsonNode stationNameNode = fieldsMode.get("name");
 
         return stationNameNode.asText();
     }
@@ -82,7 +82,7 @@ public class NbFreeDockStreamTopologyApp {
         }
         JsonNode fieldsMode = jsonNode.get("fields");
 
-        JsonNode nbfreeedockNode = fieldsMode.get("nbfreeedock");
+        JsonNode nbfreeedockNode = fieldsMode.get("numdocksavailable");
 
         return Long.parseLong(nbfreeedockNode.asText());
     }

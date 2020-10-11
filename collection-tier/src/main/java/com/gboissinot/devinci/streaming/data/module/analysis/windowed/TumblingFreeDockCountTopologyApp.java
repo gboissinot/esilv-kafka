@@ -53,6 +53,7 @@ public class TumblingFreeDockCountTopologyApp {
         KTable<Windowed<String>, Long> timeWindowedAggregatedStream =
                 groupedStream
                         .windowedBy(TimeWindows.of(Duration.ofMillis(10000)))
+
                         .aggregate(
                                 () -> 0L,
                                 (aggKey, newValue, aggValue) -> aggValue + newValue,
