@@ -1,4 +1,4 @@
-package com.gboissinot.devinci.streaming.data.module.collection;
+package com.gboissinot.esilv.streaming.data.velib.collection.producer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

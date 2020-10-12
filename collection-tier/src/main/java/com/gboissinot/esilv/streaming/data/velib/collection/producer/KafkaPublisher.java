@@ -1,4 +1,4 @@
-package com.gboissinot.devinci.streaming.data.module.collection;
+package com.gboissinot.esilv.streaming.data.velib.collection.producer;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.Properties;
 
+import static com.gboissinot.esilv.streaming.data.velib.config.KafkaConfig.BOOTSTRAP_SERVERS;
+import static com.gboissinot.esilv.streaming.data.velib.config.KafkaConfig.RAW_TOPIC_NAME;
+
 /**
  * @author Gregory Boissinot
  */
@@ -21,15 +24,15 @@ class KafkaPublisher {
     private final String topicName;
     private final Producer<String, String> producer;
 
-    KafkaPublisher(KafkaHandlerConfig config) {
-        this.producer = createProducer(config);
-        this.topicName = config.getTopicName();
+    KafkaPublisher() {
+        this.producer = createProducer();
+        this.topicName = RAW_TOPIC_NAME;
         registerShutdownHook(producer);
     }
 
-    private Producer<String, String> createProducer(KafkaHandlerConfig config) {
+    private Producer<String, String> createProducer() {
         Properties properties = new Properties();
-        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.getBootstrapServers().get(0));
+        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS.get(0));
         properties.put(ProducerConfig.ACKS_CONFIG, "all");
         properties.put(ProducerConfig.RETRIES_CONFIG, Integer.MAX_VALUE);
 

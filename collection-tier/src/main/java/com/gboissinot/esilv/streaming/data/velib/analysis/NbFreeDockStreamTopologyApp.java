@@ -1,4 +1,4 @@
-package com.gboissinot.devinci.streaming.data.module.analysis;
+package com.gboissinot.esilv.streaming.data.velib.analysis;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,12 +12,17 @@ import org.apache.kafka.streams.kstream.Produced;
 import java.io.IOException;
 import java.util.Properties;
 
-public class NbFreeDockStreamTopologyApp {
+import static com.gboissinot.esilv.streaming.data.velib.config.KafkaConfig.RAW_TOPIC_NAME;
 
+class NbFreeDockStreamTopologyApp {
+
+    static final String STREAM_APP_1_OUT = "velib-nbfreedocks-updates";
+    private static final String VELIBSTATS_STREAM_APPLICATION = "velibstats-stream-application";
+    private static final String STREAM_APP_1_INPUT = RAW_TOPIC_NAME;
 
     public static void main(String[] args) {
         Properties config = new Properties();
-        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "velibstats-stream-application");
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, VELIBSTATS_STREAM_APPLICATION);
         config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
@@ -31,7 +36,7 @@ public class NbFreeDockStreamTopologyApp {
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
 
         while (true) {
-            streams.localThreadsMetadata().forEach(data -> System.out.println(data));
+            streams.localThreadsMetadata().forEach(System.out::println);
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
@@ -47,12 +52,13 @@ public class NbFreeDockStreamTopologyApp {
 
         StreamsBuilder builder = new StreamsBuilder();
 
-        KStream<String, String> stats = builder.stream("velib-stats-raw");
+
+        KStream<String, String> stats = builder.stream(STREAM_APP_1_INPUT);
         KStream<String, Long> docksCountStream = stats
                 .selectKey((key, jsonRecordString) -> extract_station_name(jsonRecordString))
                 .map((key, value) -> new KeyValue<>(key, extract_nbfreeedock(value)));
 
-        docksCountStream.to("velib-nbfreedocks-updates", Produced.with(stringSerde, longSerde));
+        docksCountStream.to(STREAM_APP_1_OUT, Produced.with(stringSerde, longSerde));
 
         return builder.build();
     }

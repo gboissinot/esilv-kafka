@@ -1,4 +1,4 @@
-package com.gboissinot.devinci.streaming.data.module.analysis.windowed;
+package com.gboissinot.esilv.streaming.data.velib.analysis.windowed;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
@@ -10,12 +10,14 @@ import org.apache.kafka.streams.state.WindowStore;
 import java.time.Duration;
 import java.util.Properties;
 
+import static com.gboissinot.esilv.streaming.data.velib.config.KafkaConfig.BOOTSTRAP_SERVERS;
+
 public class TumblingFreeDockCountTopologyApp {
 
     public static void main(String[] args) {
         Properties config = new Properties();
         config.put(StreamsConfig.APPLICATION_ID_CONFIG, "velibstats-application-window-1");
-        config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS.get(0));
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.Long().getClass());
@@ -29,7 +31,7 @@ public class TumblingFreeDockCountTopologyApp {
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
 
         while (true) {
-            streams.localThreadsMetadata().forEach(data -> System.out.println(data));
+            streams.localThreadsMetadata().forEach(System.out::println);
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {

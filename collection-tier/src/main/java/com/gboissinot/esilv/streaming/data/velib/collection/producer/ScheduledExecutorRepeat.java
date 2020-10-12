@@ -1,4 +1,4 @@
-package com.gboissinot.devinci.streaming.data.module.collection;
+package com.gboissinot.esilv.streaming.data.velib.collection.producer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

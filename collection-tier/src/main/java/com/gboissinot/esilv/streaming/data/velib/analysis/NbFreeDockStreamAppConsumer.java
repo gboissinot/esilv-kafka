@@ -1,4 +1,4 @@
-package com.gboissinot.devinci.streaming.data.module.analysis;
+package com.gboissinot.esilv.streaming.data.velib.analysis;
 
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.serialization.LongDeserializer;
@@ -9,24 +9,25 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.gboissinot.esilv.streaming.data.velib.analysis.NbFreeDockStreamTopologyApp.STREAM_APP_1_OUT;
+import static com.gboissinot.esilv.streaming.data.velib.config.KafkaConfig.BOOTSTRAP_SERVERS;
+
 /**
  * @author Gregory Boissinot
  */
-public class NbFreeDockStreamAppConsumer {
+class NbFreeDockStreamAppConsumer {
 
     public static void main(String[] args) {
 
-        final String topic = "velib-nbfreedocks-updates";
+        final Properties config = new Properties();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS.get(0));
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "group-test-1");
+        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class.getName());
 
-        final Properties properties = new Properties();
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "group-test-1");
-        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class.getName());
-
-        final Consumer<String, Long> consumer = new KafkaConsumer<>(properties);
-        consumer.subscribe(Collections.singletonList(topic));
+        final Consumer<String, Long> consumer = new KafkaConsumer<>(config);
+        consumer.subscribe(Collections.singletonList(STREAM_APP_1_OUT));
 
         final AtomicInteger counter = new AtomicInteger(0);
 
