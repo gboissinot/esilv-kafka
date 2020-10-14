@@ -52,7 +52,6 @@ class NbFreeDockStreamTopologyApp {
 
         StreamsBuilder builder = new StreamsBuilder();
 
-
         KStream<String, String> stats = builder.stream(STREAM_APP_1_INPUT);
         KStream<String, Long> docksCountStream = stats
                 .selectKey((key, jsonRecordString) -> extract_station_name(jsonRecordString))
@@ -88,7 +87,7 @@ class NbFreeDockStreamTopologyApp {
         }
         JsonNode fieldsMode = jsonNode.get("fields");
 
-        JsonNode nbfreeedockNode = fieldsMode.get("numdocksavailable");
+        JsonNode nbfreeedockNode = fieldsMode.get("numbikesavailable");
 
         return Long.parseLong(nbfreeedockNode.asText());
     }

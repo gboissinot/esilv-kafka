@@ -7,6 +7,6 @@ $ kafka-consumer-groups -bootstrap-server localhost:9092 -describe -group group-
 $ kafka-topics --zookeeper localhost:2181 --list
 
 $ kafka-topics --delete --zookeeper localhost:2181 --topic velib-stats-raw
-$ kafka-topics --delete --zookeeper localhost:2181 --topic velib-nbfreedocks-count-notifications
 $ kafka-topics --delete --zookeeper localhost:2181 --topic velib-nbfreedocks-updates
+$ kafka-topics --delete --zookeeper localhost:2181 --topic velib-nbfreedocks-count-notifications
 
